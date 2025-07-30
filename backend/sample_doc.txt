@@ -1,0 +1,2 @@
+Retrieval-Augmented Generation (RAG) is a framework that improves language models by retrieving relevant information from a document store. This helps reduce hallucination and enhances factual accuracy.
+It typically combines a retriever component (like FAISS) to fetch context and a generator (like Gemini or GPT) to answer user queries with retrieved knowledge.

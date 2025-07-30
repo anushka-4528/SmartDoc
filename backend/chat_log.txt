@@ -1,0 +1,22 @@
+
+Q: summarize the entire file
+A: This document outlines an assignment requiring the design and development of a secure online system, "PixelForge Nexus," using a Large Language Model (LLM) like ChatGPT or Google Gemini.  The assignment is worth 100% and comprises three components: a functional prototype with source code and a video demonstration, a 2000-word report detailing design, development, and testing, and login credentials for the prototype.
+
+The "PixelForge Nexus" system should manage projects, team assignments, and basic assets/resources, with distinct roles (Admin, Project Lead, Developer) and robust login security including bcrypt password hashing and optional MFA.  The system must include pages for sign-in/registration, a user dashboard (tailored to each role), account settings, and project details.
+
+The marking rubric emphasizes system design (considering security principles), security testing and analysis (identifying and proposing solutions to issues), system development (functional prototype demonstrating security mechanisms), and the application of formal methods for behavioral modeling and verification.  The final submission requires a .docx file with links to the source code and video report, along with the 2000-word report. The video report (under 8 minutes) should showcase the system's functionality.  The report must detail the development methodology, including all stages of the software development lifecycle.  All files must be uploaded unzipped to a shared Google Drive folder.  The deadline is July 28, 2025.
+
+---
+
+Q: summarize the entire file
+A: This document outlines an assignment requiring the design and development of a secure online system, "PixelForge Nexus," using a Large Language Model (LLM) like ChatGPT or Google Gemini.  Students must create a functional prototype with project management, team assignment, and basic asset management features, incorporating robust login security (including bcrypt password hashing) and optional MFA.  The system should have distinct user roles (Admin, Project Lead, Developer) with appropriate privileges.
+
+The submission includes:
+
+* **Functional prototype:** Complete source code and a video demonstration (8 minutes max).
+* **Individual report (2000 words):** Detailing design considerations, development, testing, and security principles applied.  This report must include explanations of the methods and techniques used, and a discussion of all stages of the development lifecycle. Test/login credentials must be included in submitted files.
+* **Video report:** A fly-through demonstration of the prototype, explaining key features.
+
+The assignment is weighted 100% and assessed based on: System Design (35%), Security Testing and Analysis (35%), System Development (20%), and Formal Methods (10%).  All deliverables must be uploaded to a shared Google Drive folder with view access for anyone with the link.  The deadline is July 28, 2025.
+
+---
