@@ -1,41 +1,93 @@
-# prompts.py
+# backend/prompts.py
+from __future__ import annotations
+import json
+from typing import List, Optional, Dict, Any
 
-def build_prompt(context, question, style="concise", citation_mode=True):
+
+def build_context(
+    full_text: str,
+    candidate_chunks: Optional[List[str]] = None,
+    max_chars: int = 12000
+) -> str:
+    """
+    Builds the final context string used in the RAG prompt.
+    - If candidate_chunks (retrieved top-K) are provided, we prioritize them.
+    - We still include a trimmed full_text (history or fallback) to help disambiguate.
+    """
+    full = (full_text or "")[:max_chars]
+    parts = []
+    if candidate_chunks:
+        # Number chunks so the model can cite them as [C1], [C2], ...
+        numbered = [f"[C{i+1}] {c}" for i, c in enumerate(candidate_chunks)]
+        parts.append("Retrieved chunks:\n" + "\n\n".join(numbered))
+    if full:
+        parts.append("Additional context:\n" + full)
+    return "\n\n".join(parts).strip() or "No context."
+
+
+def build_prompt(
+    context: str,
+    question: str,
+    style: str = "concise",
+    citation_mode: bool = True
+) -> str:
+    """
+    Instructs the model to output strict JSON:
+      { "answer": "...", "citations": ["C1", "C3"] }
+    Citations refer to the [C#] tags we inject for retrieved chunks.
+    """
     return f"""
-You are a helpful assistant. Use the provided context and conversation history to answer the user’s question.
+You are a careful RAG assistant. Follow these rules:
+
+1) Use ONLY the provided context to answer. If the answer is not present, say "I don't see that in the document."
+2) If you cite, reference the chunk IDs like "C1", "C2" (from the [C#] tags).
+3) Be {style}. No extra preamble, no disclaimers.
+4) Output STRICT JSON with keys:
+   - "answer": string
+   - "citations": array of strings (e.g., ["C2", "C3"]). If none, use [].
 
 Context:
 {context}
 
-Question: {question}
-Answer style: {style}
-Citations required: {citation_mode}
-Provide the answer in JSON with keys: "answer", "citations" (if any).
-"""
+User question:
+{question}
 
-def build_context(full_text, candidate_chunks=None, max_chars=12000):
-    text = (full_text or "")[:max_chars]
-    return f"Document context:\n{text}\n"
+Now return ONLY a JSON object with fields "answer" and "citations".
+""".strip()
 
-def parse_llm_json(raw_text):
-    import json
+
+def parse_llm_json(raw_text: str) -> Dict[str, Any]:
+    """
+    Attempts to parse the model response as JSON.
+    If the model returned extra text, try to locate a JSON object; otherwise fall back.
+    """
+    raw = (raw_text or "").strip()
+
+    # Fast path
     try:
-        return json.loads(raw_text)
+        obj = json.loads(raw)
+        # normalize fields
+        ans = obj.get("answer", "")
+        cits = obj.get("citations", [])
+        if not isinstance(cits, list):
+            cits = []
+        return {"answer": ans, "citations": cits}
     except Exception:
-        return {"answer": raw_text.strip(), "citations": []}
+        pass
 
-class SessionMemory:
-    def __init__(self, max_turns=5):
-        self.turns = []
-        self.max_turns = max_turns
+    # Fallback: try to extract the first JSON object substring
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start != -1 and end != -1 and end > start:
+        try:
+            obj = json.loads(raw[start:end+1])
+            ans = obj.get("answer", "")
+            cits = obj.get("citations", [])
+            if not isinstance(cits, list):
+                cits = []
+            return {"answer": ans, "citations": cits}
+        except Exception:
+            pass
 
-    def add_turn(self, question, answer):
-        self.turns.append({"q": question, "a": answer})
-        if len(self.turns) > self.max_turns:
-            self.turns.pop(0)
-
-    def build_context(self):
-        if not self.turns:
-            return ""
-        context = "\n".join([f"Q: {t['q']}\nA: {t['a']}" for t in self.turns])
-        return f"Conversation history:\n{context}\n"
+    # Last resort: return plain text
+    return {"answer": raw, "citations": []}
